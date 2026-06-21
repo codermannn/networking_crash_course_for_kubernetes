@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  machine_a:
+    build:
+      context: ..
+      dockerfile: lab/Dockerfile
+    container_name: machine_a
+    volumes:
+      - ../code:/lab/code
+    stdin_open: true
+    tty: true
+
+  machine_b:
+    build:
+      context: ..
+      dockerfile: lab/Dockerfile
+    container_name: machine_b
+    volumes:
+      - ../code:/lab/code
+    stdin_open: true
+    tty: true

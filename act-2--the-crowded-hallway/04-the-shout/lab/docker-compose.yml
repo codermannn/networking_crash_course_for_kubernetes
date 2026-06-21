@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  machine_a:
+    image: nicolaka/netshoot:latest
+    container_name: arp_machine_a
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.2
+
+  machine_b:
+    image: nicolaka/netshoot:latest
+    container_name: arp_machine_b
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.3
+
+networks:
+  hallway:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

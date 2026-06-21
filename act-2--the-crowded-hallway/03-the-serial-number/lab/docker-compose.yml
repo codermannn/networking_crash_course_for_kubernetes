@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  machine_a:
+    image: nicolaka/netshoot:latest
+    container_name: mac_machine_a
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.2
+
+  machine_b:
+    image: nicolaka/netshoot:latest
+    container_name: mac_machine_b
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.3
+
+  machine_c:
+    image: nicolaka/netshoot:latest
+    container_name: mac_machine_c
+    stdin_open: true
+    tty: true
+    # We use host networking mode or CAP_NET_ADMIN if needed, 
+    # but on the same bridge network C can snort if we promiscuous capture.
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.4
+
+networks:
+  hallway:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
