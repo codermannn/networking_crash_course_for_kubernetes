@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your privileged container.
+> 3. **Run the Lab:** Run the room, router, veth, and routing table configuration commands in **The Investigation** steps.
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace how MAC envelopes are rewritten at each hop while IP addresses remain constant.
+> 5. **Break It:** Sabotage the path of return by deleting the route back from Room B and watch the ping fail.
+
+---
+
 ## The Situation
 
 In the previous module, we saw that if we assign Room A the IP `10.0.1.1` (Floor 1) and Room B `10.0.2.1` (Floor 2), they cannot talk. The kernel refuses to send packets because it doesn't have a map for the other floor.
@@ -191,6 +202,31 @@ You should see:
 **What it means:**
 The packet went through hop 1 (the router at `10.0.1.254`) before reaching hop 2 (the target at `10.0.2.1`). 
 `traceroute` does this by sending a packet with a **Time-To-Live (TTL) of 1**. The router decrements it to `0` (interpreting it as a packet that has run out of breath), drops it, and sends an ICMP "Time Exceeded" reply, revealing its IP. `traceroute` then sends a packet with TTL 2, mapping the next hop, and so on.
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've configured the router and traced the path using traceroute, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-3--escaping-the-building/07-the-map/diagrams/flow.md)) to visualize how MAC addresses are rewritten at each routing hop while IPs stay unchanged:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant A as Room A (10.0.1.1, MAC: AA)
+    participant Router as Router (10.0.1.254 / 10.0.2.254, MAC: RR)
+    participant B as Room B (10.0.2.1, MAC: BB)
+
+    Note over A: Needs to send to 10.0.2.1<br/>Dst is remote, sends to Gateway (10.0.1.254)<br/>Dst MAC: RR, Dst IP: 10.0.2.1
+
+    A->>Router: Frame flies to Router
+    
+    Note over Router: Receives frame<br/>Consults routing table for 10.0.2.1<br/>Matches subnet 10.0.2.0/24<br/>Rewrites Dst MAC: BB, Dst IP: 10.0.2.1
+
+    Router->>B: Frame flies to B
+    Note over B: Receives frame successfully!
+```
 
 ---
 

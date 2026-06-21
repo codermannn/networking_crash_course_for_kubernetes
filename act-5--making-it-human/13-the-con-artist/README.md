@@ -7,6 +7,18 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your privileged container.
+> 3. **Inspect the Code:** Open [nat_inspect.py](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-5--making-it-human/13-the-con-artist/code/nat_inspect.py) to see how the script reads the conntrack memory table.
+> 4. **Run the Lab:** Run the network address translation and conntrack commands in **The Investigation** steps.
+> 5. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace how the NAT gateway rewrites source/destination IPs and maps replies back.
+> 6. **Break It:** Flush the connection tracking table mid-download and watch the active connection freeze.
+
+---
+
 ## The Situation
 
 We can route packets across the globe using names translated to IP addresses. 
@@ -57,6 +69,11 @@ Inside the container, run `ip addr show eth0` and note your private IP. It will 
 
 Let's look at how the kernel tracks translations. We have created a helper script `/lab/code/nat_inspect.py` to parse this for us.
 
+> [!TIP]
+> **🔍 Step 1a: Inspect the Code First**
+> Before executing the script, open and inspect [nat_inspect.py](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-5--making-it-human/13-the-con-artist/code/nat_inspect.py).
+> Notice how the Python script parses `/proc/net/nf_conntrack` directly to read the kernel's connection state, format the hex data, and output a clean table showing how return paths are mapped.
+
 **Action:**
 1. In one terminal window, start a persistent connection by downloading a large file in the background (or running a curl loop).
 2. In a second terminal, execute `nat_inspect.py` (which reads `/proc/net/nf_conntrack`).
@@ -90,6 +107,38 @@ Let's see how we write NAT rules in Linux using `iptables`.
 
 **What it means:**
 Masquerading is dynamic source NAT. The rule tells the kernel: *"Any packet leaving the container namespace via the external interface should have its source IP replaced with the interface's IP."*
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've read the conntrack table and inspected the NAT rules, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-5--making-it-human/13-the-con-artist/diagrams/flow.md)) to visualize how the NAT gateway intercepts, rewrites, and matches packets back to their source:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant Pod as Private Pod (10.0.1.2:1234)
+    participant NAT as NAT Gateway (Router, Pub IP: 99.99.99.99)
+    participant Web as Web Server (8.8.8.8:80)
+
+    Note over Pod: Sends packet to 8.8.8.8:80<br/>Src: 10.0.1.2:1234, Dst: 8.8.8.8:80
+
+    Pod->>NAT: Packet travels to Gateway
+    
+    Note over NAT: Intercepts packet<br/>Allocates public port 5555<br/>Writes to notepad (conntrack):<br/>[10.0.1.2:1234] <-> [99.99.99.99:5555]<br/>Rewrites Src: 99.99.99.99:5555, Dst: 8.8.8.8:80
+
+    NAT->>Web: Packet forwarded to Web Server
+    
+    Note over Web: Receives packet<br/>Sends reply back to sender:<br/>Src: 8.8.8.8:80, Dst: 99.99.99.99:5555
+
+    Web->>NAT: Reply packet arrives at Gateway
+    
+    Note over NAT: Receives reply<br/>Looks up port 5555 in notepad:<br/>"Ah, this is for 10.0.1.2:1234!"<br/>Rewrites Src: 8.8.8.8:80, Dst: 10.0.1.2:1234
+
+    NAT->>Pod: Reply delivered to Pod!
+```
 
 ---
 

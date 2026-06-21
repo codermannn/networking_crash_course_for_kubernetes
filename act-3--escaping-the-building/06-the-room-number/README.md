@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your privileged container.
+> 3. **Run the Lab:** Run the IP configuration and ping commands in **The Investigation** steps.
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to understand how the kernel's bitwise AND operation determines if a packet is local or remote.
+> 5. **Break It:** Tighten the subnet mask boundary to `/30` and watch the direct link fail.
+
+---
+
 ## The Situation
 
 In the previous module, we built two isolated rooms (`room_a` and `room_b`) using network namespaces and connected them with a virtual Ethernet thread. 
@@ -158,6 +169,47 @@ rtt min/avg/max/mdev = 0.050/0.050/0.050/0.000 ms
 
 **What it means:**
 The target prefix (`10.0.1.0`) matched the sender's prefix. The kernel realized they were on the same floor, sent an ARP shout to find the MAC address for `10.0.1.2`, wrote the MAC on the envelope, and sent it down the veth cable.
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've assigned IP addresses and tested pings across subnets, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-3--escaping-the-building/06-the-room-number/diagrams/flow.md)) to visualize how the kernel uses the subnet mask to determine if a destination is local or remote:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
+flowchart TD
+    IP["Destination IP: 10.0.2.5<br/>(in binary)"]
+    Mask["Subnet Mask: 255.255.255.0<br/>(in binary: 24 ones, 8 zeros)"]
+    
+    AND{"Kernel performs bitwise AND:<br/>IP & Mask"}
+    
+    LocalSubnet["Local Subnet Prefix:<br/>10.0.1.0/24"]
+    Result["Result: 10.0.2.0"]
+    
+    Match{"Does 10.0.2.0 match local<br/>subnet 10.0.1.0?"}
+    
+    Shout["Local Destination!<br/>Send ARP shout for 10.0.2.5"]
+    Map["Remote Destination!<br/>Consult Routing Table for gateway"]
+
+    IP --> AND
+    Mask --> AND
+    AND --> Result
+    Result --> Match
+    LocalSubnet --> Match
+    
+    Match -->|Yes| Shout
+    Match -->|No| Map
+    
+    style IP fill:#F8FAFC,stroke:#64748B,stroke-width:1px
+    style Mask fill:#F8FAFC,stroke:#64748B,stroke-width:1px
+    style AND fill:#EEF2F6,stroke:#475569,stroke-width:1px
+    style Match fill:#FFF7ED,stroke:#EA580C,stroke-width:1px
+    style Shout fill:#ECFDF5,stroke:#059669,stroke-width:1.5px
+    style Map fill:#FFF1F2,stroke:#E11D48,stroke-width:1.5px
+```
 
 ---
 

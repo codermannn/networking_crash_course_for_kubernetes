@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your terminals.
+> 3. **Run the Lab:** Run the terminal commands in **The Investigation** steps. (No custom code compilation is needed for this module!)
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace how ethernet frames travel over the shared wire.
+> 5. **Break It:** Sabotage the network link by duplicate-spoofing the MAC address.
+
+---
+
 ## The Situation
 
 Imagine a long corridor where ten rooms sit side by side, all sharing the same physical hallway. There are no private telephone lines running between them. When `machine_a` wishes to speak to `machine_b`, it cannot whisper. It must shout its message directly into the shared air of the corridor.
@@ -137,6 +148,32 @@ The driver field should show `veth`.
 
 **What it means:**
 `veth` stands for Virtual Ethernet. In this simulated world, the kernel is acting as the grand engineer, presenting a virtual device that behaves exactly like physical silicon, matching MAC addresses in software registers.
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've observed the network card's promiscuous sniffer in action, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-2--the-crowded-hallway/03-the-serial-number/diagrams/flow.md)) to visualize how the hardware cards filter ethernet frames on a shared wire:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant A as Machine A (MAC: AA:AA)
+    participant Bridge as Shared Wire (Bridge)
+    participant B as Machine B (MAC: BB:BB)
+    participant C as Machine C (MAC: CC:CC)
+
+    Note over A: Envelope prepared:<br/>Src MAC: AA:AA<br/>Dst MAC: BB:BB<br/>Payload: "Hello B"
+
+    A->>Bridge: Transmits Electrical Signals
+    Bridge->>B: Delivers frame (promiscuous read)
+    Bridge->>C: Delivers frame (promiscuous read)
+
+    Note over B: NIC checks Dst MAC:<br/>"BB:BB matches my serial number!"<br/>Interrupts OS, copies to RAM.
+    B->>B: Process payload
+
+    Note over C: NIC checks Dst MAC:<br/>"BB:BB does not match CC:CC."<br/>Drops frame in hardware.<br/>OS is never interrupted.
+```
 
 ---
 

@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your terminals.
+> 3. **Run the Lab:** Run the terminal commands in **The Investigation** steps. (No custom code compilation is needed for this module!)
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace the ARP broadcast and unicast reply sequence.
+> 5. **Break It:** Sabotage the neighbor table cache with a static lie and observe how the kernel stops shouting.
+
+---
+
 ## The Situation
 
 In the previous module, we learned that the network card checks the destination MAC address on every Ethernet frame, filtering out messages meant for other rooms to keep the CPU quiet.
@@ -127,6 +138,35 @@ You should see:
 
 **What it means:**
 The kernel wrote the answer in its notebook (`ip neigh` cache). The next time you send data to `172.20.0.3`, it will bypass the shout completely and write the MAC address directly on the envelope.
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've traced the ARP packets on the wire and inspected the neighbor cache table, study the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-2--the-crowded-hallway/04-the-shout/diagrams/flow.md)) to visualize how the kernel translates logical IPs to MAC addresses:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant A as Machine A (172.20.0.2)
+    participant Bridge as Shared Wire (Bridge)
+    participant B as Machine B (172.20.0.3)
+
+    Note over A: Needs to talk to 172.20.0.3<br/>Checks 'ip neigh' cache: empty!
+
+    A->>Bridge: Broadcast Dst: FF:FF:FF:FF:FF:FF<br/>"Who has 172.20.0.3? Tell 172.20.0.2!"
+    Bridge->>B: Delivers broadcast to all slots
+
+    Note over B: Matches 172.20.0.3 IP!<br/>Prepares unicast reply.
+
+    B->>Bridge: Unicast Dst: 02:42:ac:14:00:02<br/>"I have it! My MAC is 02:42:ac:14:00:03"
+    Bridge->>A: Delivers directly to A
+
+    Note over A: Writes to cache notebook:<br/>172.20.0.3 -> 02:42:ac:14:00:03
+
+    A->>Bridge: Sends payload frame directly to B
+    Bridge->>B: Delivers directly to B
+```
 
 ---
 

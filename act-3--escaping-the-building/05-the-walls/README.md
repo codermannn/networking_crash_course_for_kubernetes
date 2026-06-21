@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your privileged container.
+> 3. **Run the Lab:** Run the network namespace creation commands in **The Investigation** steps.
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to visualize how the network namespaces are wired together with `veth` devices.
+> 5. **Break It:** Move both endpoints of the `veth` pair back into the same room and watch the isolation dissolve.
+
+---
+
 ## The Situation
 
 In the previous act, we saw that when a container pings a new neighbor, it screams an ARP broadcast packet that reaches every network card in the hallway.
@@ -188,6 +199,36 @@ Terminal 2 prints:
 **What it means:**
 The shouts were captured inside Room A, but they did **not** emerge in Room B! 
 Even though they are connected by a virtual cable, the interfaces do not have IP addresses or active routes. The broadcast domain is restricted to the namespace. The walls successfully stopped the screaming from flooding the network.
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've built the namespaces and wired them together, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-3--escaping-the-building/05-the-walls/diagrams/flow.md)) to visualize how the kernel isolates network stacks and tunnels bytes between them:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
+flowchart LR
+    subgraph HostNamespace ["Host / Root Namespace"]
+        subgraph NS_A ["Namespace: room_a"]
+            veth_a["veth_a<br/>(Endpoint A)"]
+        end
+
+        subgraph NS_B ["Namespace: room_b"]
+            veth_b["veth_b<br/>(Endpoint B)"]
+        end
+
+        veth_a <-->|"Virtual Ethernet Cable<br/>(veth pair)"| veth_b
+    end
+
+    style HostNamespace fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px
+    style NS_A fill:#FFF7ED,stroke:#EA580C,stroke-width:1.5px
+    style NS_B fill:#E0E7FF,stroke:#4F46E5,stroke-width:1.5px
+    style veth_a fill:#ffffff,stroke:#475569,stroke-width:1px,stroke-dasharray: 5 5
+    style veth_b fill:#ffffff,stroke:#475569,stroke-width:1px,stroke-dasharray: 5 5
+```
 
 ---
 

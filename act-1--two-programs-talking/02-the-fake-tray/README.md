@@ -7,6 +7,18 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your client/server containers.
+> 3. **Inspect the Code:** Open [socket_hello.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/02-the-fake-tray/code/socket_hello.c) and [socket_listen.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/02-the-fake-tray/code/socket_listen.c) to inspect the Socket API.
+> 4. **Run the Lab:** Compile and run the client/server in **The Investigation** steps.
+> 5. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace how the TCP handshake happens under the hood.
+> 6. **Break It:** Kill the server and watch how the kernel returns `ECONNREFUSED`.
+
+---
+
 ## The Situation
 
 In the previous module, we found a way to share a single thought between two isolated minds by using a Named Pipe—a local tray where bytes were placed in memory. It was a beautiful, brief bridge, but it relied entirely on the illusion of a shared floor. They both had to be sitting in the same room, reaching for the exact same spot on the table, `/tmp/my_tray`.
@@ -52,6 +64,11 @@ Open two terminal windows.
 ## The Investigation
 
 Let's compile our client and server programs.
+
+> [!TIP]
+> **🔍 Step 0: Inspect the Code First**
+> Before compiling, open and inspect the client code in [socket_hello.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/02-the-fake-tray/code/socket_hello.c) and the server code in [socket_listen.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/02-the-fake-tray/code/socket_listen.c).
+> Pay close attention to how similar the socket creation and connection routines are to the file descriptor primitives we used in Module 01. Observe that once the connection is established, the client writes bytes to the socket using `write()`, and the server reads them using `read()`.
 
 In both Terminal 1 (`machine_a`) and Terminal 2 (`machine_b`), compile the programs:
 ```bash
@@ -123,6 +140,40 @@ Now look at Terminal 2 (`machine_b`). The server has woken up and printed:
 ```text
 Connection accepted from 172.20.0.2
 Received message: 'Hello from Machine A!'
+```
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've run the client and server programs, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/02-the-fake-tray/diagrams/flow.md)) to visualize how the kernel translates standard file descriptors into TCP packets over the wire:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant Client as Client (machine_a)
+    participant CKernel as Client Kernel
+    participant SKernel as Server Kernel
+    participant Server as Server (machine_b)
+
+    Note over Server: server_fd = socket()
+    Note over Server: bind(server_fd, port 8080)
+    Note over Server: listen(server_fd)
+    Server->>SKernel: accept() [blocks]
+
+    Note over Client: sock_fd = socket()
+    Client->>CKernel: connect(sock_fd, machine_b_ip:8080)
+    
+    CKernel->>SKernel: TCP Syn Packet (over the wire)
+    SKernel->>CKernel: TCP Syn-Ack
+    CKernel->>SKernel: TCP Ack
+    
+    SKernel-->>Server: accept() unblocks, returns new fd (3)
+    CKernel-->>Client: connect() returns 0
+
+    Client->>CKernel: write(sock_fd, "Hello!")
+    CKernel->>SKernel: Ethernet frame carrying TCP packet
+    SKernel->>Server: read(3) returns "Hello!"
 ```
 
 ---

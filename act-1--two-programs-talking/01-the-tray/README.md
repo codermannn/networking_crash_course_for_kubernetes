@@ -7,6 +7,18 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your terminals.
+> 3. **Inspect the Code:** Open [tray.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/01-the-tray/code/tray.c) to inspect the system calls.
+> 4. **Run the Lab:** Compile and run the code in **The Investigation** steps.
+> 5. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to see how the processes are matched in memory.
+> 6. **Break It:** Sabotage the pipe to see how the OS keeps the memory buffer alive.
+
+---
+
 ## The Situation
 
 We begin with the illusion of separateness. 
@@ -121,6 +133,10 @@ Hello from the other side!
 
 Let's see what is actually happening in the kernel's own handwriting. We will compile our custom C program `tray.c` and watch the system calls.
 
+> [!TIP]
+> **🔍 Step 4a: Inspect the Code First**
+> Before compiling, open and inspect the source code in [tray.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/01-the-tray/code/tray.c). Look at how standard `open()`, `read()`, and `write()` calls are used to communicate between processes, and note how the `open()` call blocks until both processes are present.
+
 In Terminal 2, compile the program:
 ```bash
 gcc -o /lab/code/tray /lab/code/tray.c
@@ -155,6 +171,38 @@ Received message: 'Zen Syscall Message'
 1. The kernel blocked the reader inside `openat()`.
 2. When the writer called `openat()`, the kernel matched them together and unblocked both.
 3. The reader read from file descriptor `3`. The bytes were copied directly in RAM from one process to the other.
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've run the code and traced the system calls, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-1--two-programs-talking/01-the-tray/diagrams/flow.md)) to visualize how the kernel matches the reader and writer processes in memory:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
+flowchart TD
+    subgraph Userspace ["Userspace: Isolated Memory"]
+        A["Terminal A (Writer)<br/>PID: 101"] 
+        B["Terminal B (Reader)<br/>PID: 102"]
+    end
+
+    subgraph Kernel ["Kernelspace: Shared Memory"]
+        FIFO["Named Pipe Buffer<br/>('/tmp/my_tray' in RAM)"]
+        Matchmaker{"Both Reader & Writer<br/>present?"}
+    end
+
+    A -->|"1. open(FIFO, O_WRONLY)"| Matchmaker
+    B -->|"2. open(FIFO, O_RDONLY)"| Matchmaker
+
+    Matchmaker -->|Yes| Unblock["Unblock both processes"]
+    Unblock -->|"3. write(fd, msg)"| FIFO
+    FIFO -->|"4. read(fd, buf)"| B
+
+    style Userspace fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px
+    style Kernel fill:#EEF2F6,stroke:#475569,stroke-width:1.5px
+    style FIFO fill:#FEF3C7,stroke:#D97706,stroke-width:1.5px
+    style Unblock fill:#ECFDF5,stroke:#059669,stroke-width:1.5px
+```
 
 ---
 

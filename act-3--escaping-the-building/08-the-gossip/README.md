@@ -7,6 +7,17 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your container.
+> 3. **Run the Lab:** Run the traceroute and whois commands in **The Investigation** steps.
+> 4. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to understand how BGP prefix advertisements and hijacking work.
+> 5. **Break It:** Review the self-healing routing behavior during physical connection failures.
+
+---
+
 ## The Situation
 
 In the previous module, we configured static routes. We manually told `room_a` that to reach Floor 2, it must pass the packet to the router at `10.0.1.254`.
@@ -93,6 +104,48 @@ But their local neighbors gossiped with their global neighbors. Within minutes, 
 **Why did global routers follow the lie?**
 1. Pakistan Telecom advertised a more specific subnet (`/24`) than YouTube's own advertisement (`/22`). In routing, the **Longest Prefix Match** (the more specific rule) always wins.
 2. Global routers saw a route that looked "closer" and more specific, and immediately redirected YouTube traffic from New York, London, and Tokyo to Pakistan Telecom's routers, crashing their network and blocking YouTube globally for 2 hours.
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've traced Autonomous Systems and read the case study, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-3--escaping-the-building/08-the-gossip/diagrams/flow.md)) to visualize how BGP prefix advertisements and routing path hijacking occur in the global mesh:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
+flowchart TD
+    subgraph AS300 ["AS 300: Google Network"]
+        Prefix["Prefix: 8.8.8.0/24"]
+    end
+
+    subgraph AS200 ["AS 200: Transit Provider"]
+        R2["BGP Router 2"]
+    end
+
+    subgraph AS100 ["AS 100: Your ISP"]
+        R1["BGP Router 1"]
+    end
+
+    subgraph AS400 ["AS 400: Malicious ISP"]
+        R4["BGP Router 4 (Hijacker)"]
+    end
+
+    AS300 -->|"Advertises 8.8.8.0/24<br/>AS Path: [300]"| AS200
+    AS200 -->|"Advertises 8.8.8.0/24<br/>AS Path: [200, 300]"| AS100
+    
+    AS400 -.->|"Lies: 'I own 8.8.8.0/24!'<br/>AS Path: [400] (shorter!)"| AS100
+
+    Note["Router 1 sees two paths to 8.8.8.0/24:<br/>1. Via AS200: [200, 300] (2 hops)<br/>2. Via AS400: [400] (1 hop!)<br/>Shortest path wins! Traffic is hijacked."]
+    AS100 --- Note
+
+    style AS300 fill:#ECFDF5,stroke:#059669,stroke-width:1.5px
+    style AS200 fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px
+    style AS100 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1.5px
+    style AS400 fill:#FFF1F2,stroke:#E11D48,stroke-width:1.5px
+    style Note fill:#FEF08A,stroke:#CA8A04,stroke-width:1px,stroke-dasharray: 5 5
+```
 
 ---
 

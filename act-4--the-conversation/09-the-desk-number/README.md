@@ -7,6 +7,18 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your container.
+> 3. **Inspect the Code:** Open [multi_listen.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/09-the-desk-number/code/multi_listen.c) to inspect the multi-port select system call mechanism.
+> 4. **Run the Lab:** Compile and run the code in **The Investigation** steps.
+> 5. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to understand how the kernel dispatches incoming port traffic.
+> 6. **Break It:** Attempt to bind another process to Port 80 and observe how the kernel handles address collisions.
+
+---
+
 ## The Situation
 
 We can now route packets across the globe to reach our destination machine. 
@@ -57,6 +69,11 @@ Let's inspect the desks. We will compile a custom C program `multi_listen.c` tha
 ### Step 1: Compile and Run the Multi-Listener
 
 In Terminal 1, compile and run the program:
+
+> [!TIP]
+> **🔍 Step 0: Inspect the Code First**
+> Before compiling, open and inspect [multi_listen.c](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/09-the-desk-number/code/multi_listen.c).
+> Examine how the program creates two sockets, binds them to Port 80 and Port 443 respectively, and then calls `select()` to block until a packet arrives on either file descriptor.
 
 **Run this:**
 ```bash
@@ -143,6 +160,40 @@ Let's decode the local address column:
 - `st` column shows state `0A` which is hex for `10`. State `10` is `TCP_LISTEN`.
 
 This table is the kernel's master dispatch sheet.
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've run the multi-listener and verified it using `ss`, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/09-the-desk-number/diagrams/flow.md)) to visualize how the kernel reads the TCP header and forwards data to the matching socket descriptor:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
+flowchart TD
+    NIC["Network Card / IP Layer<br/>(Destination: 172.20.0.2)"]
+    
+    Dispatcher{"Kernel Reads TCP Header:<br/>Destination Port?"}
+    
+    Socket80["Socket on Port 80<br/>(File Descriptor 3)"]
+    Socket443["Socket on Port 443<br/>(File Descriptor 4)"]
+    
+    ProcA["Process A (Nginx HTTP)<br/>PID: 101"]
+    ProcB["Process B (Nginx HTTPS)<br/>PID: 102"]
+
+    NIC --> Dispatcher
+    Dispatcher -->|80| Socket80
+    Dispatcher -->|443| Socket443
+    
+    Socket80 -->|read() returns bytes| ProcA
+    Socket443 -->|read() returns bytes| ProcB
+    
+    style NIC fill:#F8FAFC,stroke:#64748B,stroke-width:1px
+    style Dispatcher fill:#FFF7ED,stroke:#EA580C,stroke-width:1px
+    style Socket80 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1.5px
+    style Socket443 fill:#E0E7FF,stroke:#4F46E5,stroke-width:1.5px
+    style ProcA fill:#ECFDF5,stroke:#059669,stroke-width:1px
+    style ProcB fill:#ECFDF5,stroke:#059669,stroke-width:1px
+```
 
 ---
 

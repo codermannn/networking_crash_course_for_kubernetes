@@ -7,6 +7,18 @@
 
 ---
 
+> [!NOTE]
+> **🗺️ The Seeker's Path: How to Study This Module**
+> To master this module's concept, follow these steps in order:
+> 1. **Predict:** Read **Your Prediction** and guess what will happen.
+> 2. **Setup:** Go to **The Lab** and spin up your container.
+> 3. **Inspect the Code:** Open [seq_numbers.py](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/10-the-registered-mail/code/seq_numbers.py) to see how the python parser processes tcpdump outputs to track sequence numbers.
+> 4. **Run the Lab:** Introduce network loss and run the TCP transfer in **The Investigation** steps.
+> 5. **Visualise the Flow:** Study the embedded **Mermaid Diagram** under **Visualise the Flow** to trace how SYN, SYN-ACK, and ACK packets retransmit when data is dropped on the wire.
+> 6. **Break It:** Switch to UDP and send a stream of numbers, watching the packets vanish without recovery.
+
+---
+
 ## The Situation
 
 We can route packets to target desks across the globe. 
@@ -125,6 +137,11 @@ This will save any incoming data to a file.
 
 In Terminal 3 (on the `sender` container), start `tcpdump` to capture the raw absolute sequence numbers, and pipe the output to our python formatter script:
 
+> [!TIP]
+> **🔍 Step 4a: Inspect the Code First**
+> Before running the parser script, open and inspect [seq_numbers.py](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/10-the-registered-mail/code/seq_numbers.py).
+> Look at how the Python script parses stdin line-by-line, extracts the TCP flags, sequence number range, and acknowledgment number, and formats it to make the TCP flow readable.
+
 **Run this:**
 ```bash
 tcpdump -i eth0 -S -n tcp port 8080 | python3 /lab/code/seq_numbers.py
@@ -167,6 +184,55 @@ Wait, since 30% packet loss is active, you might see duplicate sequence numbers 
 2. **The Sequence:** The sender assigned the first byte sequence number `2584102915`.
 3. **The Loss & Recovery:** If a data packet or ACK was dropped, the sender's kernel noticed the timer expired (or received duplicate ACKs) and automatically re-sent the identical byte range (`seq 2584102915`, `length 1001`).
 4. **The Integrity:** Check the file on the receiver: `wc -c /tmp/received_file.txt`. It should show exactly `1001` bytes. The file arrived perfectly intact despite 30% of the wire's signals being deleted.
+
+---
+
+---
+
+## 🗺️ Visualise the Flow
+
+Now that you've traced absolute sequence numbers and duplicate ACKs in the pcap parser, look at the diagram below (also available as a standalone reference in [flow.md](file:///Users/rahullohia/repos/networking_crash_course_for_kubernetes/act-4--the-conversation/10-the-registered-mail/diagrams/flow.md)) to visualize how the TCP sender detects packet loss and performs retransmissions:
+
+```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
+sequenceDiagram
+    participant Sender as TCP Sender
+    participant Wire as Unreliable Wire (30% Loss)
+    participant Receiver as TCP Receiver
+
+    Note over Sender, Receiver: 1. TCP 3-Way Handshake
+    Sender->>Wire: SYN (seq=100)
+    Wire->>Receiver: SYN (seq=100)
+    Receiver->>Wire: SYN-ACK (seq=500, ack=101)
+    Wire->>Sender: SYN-ACK (seq=500, ack=101)
+    Sender->>Wire: ACK (seq=101, ack=501)
+    Wire->>Receiver: ACK (seq=101, ack=501)
+
+    Note over Sender, Receiver: 2. Data Transmission with Packet Loss
+    Sender->>Wire: Data Segment 1 (seq=101, len=100)
+    Wire->>Receiver: Data Segment 1 (seq=101, len=100)
+    Note over Receiver: Receives bytes 101-200.<br/>Sends ACK 201.
+    Receiver->>Wire: ACK (ack=201)
+    Wire->>Sender: ACK (ack=201)
+
+    Sender->>Wire: Data Segment 2 (seq=201, len=100)
+    Note over Wire: Packet dropped on wire!
+    
+    Sender->>Wire: Data Segment 3 (seq=301, len=100)
+    Wire->>Receiver: Data Segment 3 (seq=301, len=100)
+    
+    Note over Receiver: Gap detected!<br/>Expected 201, got 301.<br/>Sends Duplicate ACK 201.
+    Receiver->>Wire: ACK (ack=201)
+    Wire->>Sender: ACK (ack=201)
+
+    Note over Sender: Retransmission timer fires<br/>or duplicate ACKs trigger retransmit.
+    Sender->>Wire: Data Segment 2 (seq=201, len=100)
+    Wire->>Receiver: Data Segment 2 (seq=201, len=100)
+    
+    Note over Receiver: Receives 201-300.<br/>Now has everything up to 400.<br/>Sends ACK 401.
+    Receiver->>Wire: ACK (ack=401)
+    Wire->>Sender: ACK (ack=401)
+```
 
 ---
 
