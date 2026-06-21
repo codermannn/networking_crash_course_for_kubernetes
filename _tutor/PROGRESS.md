@@ -72,10 +72,14 @@
 
 ## 5. Student Notes
 
-*Capture analogies that worked well, particular areas of confusion, or pacing requests here.*
+*   **Confusion Point:** The student expressed confusion regarding the sequence of study: when to inspect the source code in `code/`, when to run commands inside the `lab/` workbench, and when to look at the Mermaid flow diagrams.
+*   **Resolution:** Modified all 13 module READMEs to add:
+    1.  A **"🗺️ The Seeker's Path: How to Study This Module"** callout at the top of every README showing the precise order of learning steps.
+    2.  An **"🔍 Inspect the Code"** callout box inline before C/Python file compilation/runs, linking directly to the source code file.
+    3.  A **"🗺️ Visualise the Flow"** section inline containing the embedded Mermaid diagram from `diagrams/flow.md`, explaining how the diagram maps the actions they just ran.
 
 ---
 
 ## 6. Next Session Plan
 
-*Detail the specific agenda for the next session.*
+*   Begin Act I, Module 01: The Tray. Walk the student through the prediction step, inspecting `tray.c`, compiling/running the reader/writer, and studying the Named Pipe Flow diagram.
