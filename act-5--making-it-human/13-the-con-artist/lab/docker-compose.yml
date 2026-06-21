@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  workbench:
+    build:
+      context: ..
+      dockerfile: lab/Dockerfile
+    container_name: nat_workbench
+    privileged: true # The building manager's master key to build a NAT gateway with iptables
+    volumes:
+      - ../code:/lab/code
+    stdin_open: true
+    tty: true

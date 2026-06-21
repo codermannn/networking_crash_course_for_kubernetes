@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  workbench:
+    build:
+      context: ..
+      dockerfile: lab/Dockerfile
+    container_name: port_workbench
+    volumes:
+      - ../code:/lab/code
+    stdin_open: true
+    tty: true

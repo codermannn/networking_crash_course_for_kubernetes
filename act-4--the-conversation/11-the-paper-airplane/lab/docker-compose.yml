@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  sender:
+    image: nicolaka/netshoot:latest
+    container_name: udp_sender
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.2
+
+  receiver:
+    image: nicolaka/netshoot:latest
+    container_name: udp_receiver
+    stdin_open: true
+    tty: true
+    networks:
+      hallway:
+        ipv4_address: 172.20.0.3
+
+networks:
+  hallway:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
