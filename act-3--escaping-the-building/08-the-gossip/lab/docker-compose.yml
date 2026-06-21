@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  workbench:
+    image: nicolaka/netshoot:latest
+    container_name: gossip_workbench
+    stdin_open: true
+    tty: true

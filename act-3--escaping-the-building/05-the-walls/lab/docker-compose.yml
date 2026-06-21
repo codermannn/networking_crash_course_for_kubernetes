@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  workbench:
+    image: nicolaka/netshoot:latest
+    container_name: walls_workbench
+    privileged: true # The building manager's master key to build namespaces/veths
+    stdin_open: true
+    tty: true

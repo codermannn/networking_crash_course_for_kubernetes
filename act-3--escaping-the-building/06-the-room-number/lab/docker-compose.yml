@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  workbench:
+    image: nicolaka/netshoot:latest
+    container_name: ip_workbench
+    privileged: true # The building manager's master key to assign IPs and modify subnets
+    stdin_open: true
+    tty: true
