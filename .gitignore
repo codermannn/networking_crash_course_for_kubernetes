@@ -1,0 +1,15 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Compiled C binaries
+/act-1--two-programs-talking/01-the-tray/lab/code/tray
+/act-1--two-programs-talking/02-the-fake-tray/lab/code/socket_hello
+/act-1--two-programs-talking/02-the-fake-tray/lab/code/socket_listen
+/act-4--the-conversation/09-the-desk-number/lab/code/multi_listen
