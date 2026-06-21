@@ -185,6 +185,15 @@ Wait, since 30% packet loss is active, you might see duplicate sequence numbers 
 3. **The Loss & Recovery:** If a data packet or ACK was dropped, the sender's kernel noticed the timer expired (or received duplicate ACKs) and automatically re-sent the identical byte range (`seq 2584102915`, `length 1001`).
 4. **The Integrity:** Check the file on the receiver: `wc -c /tmp/received_file.txt`. It should show exactly `1001` bytes. The file arrived perfectly intact despite 30% of the wire's signals being deleted.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's query the kernel's active socket table to inspect the raw TCP connection stats (including round-trip time and active retransmission metrics). Run this in a new terminal window inside the sender:
+> ```bash
+> ss -ti
+> ```
+> **What to look for:**
+> You will see columns like `rto` (retransmission timeout), `rtt` (round-trip time), `ssthresh` (slow start threshold), and `retrans` showing how many packets the kernel had to re-send to heal the broken link. This exposes the socket's internal TCP state structure inside the kernel.
+
 ---
 
 ---

@@ -135,31 +135,28 @@ LISTEN   0        3                 0.0.0.0:443            0.0.0.0:*      users:
 
 ---
 
-### Step 4: Read the Kernel's Raw Desk Table
+### Step 4: Read the Listening Table
 
-Let's read the raw hex table in kernel memory.
-
-**Run this:**
-```bash
-cat /proc/net/tcp
-```
-
-**What to look for:**
-A table showing local addresses in hex:
-```text
-  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode
-   0: 00000000:0050 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 12345 1
-   1: 00000000:01BB 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 12346 1
-```
-
-**What it means:**
-Let's decode the local address column:
-- `00000000` is the IP `0.0.0.0` (INADDR_ANY).
-- `0050` is the port in hex. Convert `50` hex to decimal: `5 * 16 = 80`. This is Port 80!
-- `01BB` is port in hex. Convert `1BB` hex: `1 * 256 + 11 * 16 + 11 = 256 + 176 + 11 = 443`. This is Port 443!
-- `st` column shows state `0A` which is hex for `10`. State `10` is `TCP_LISTEN`.
-
-This table is the kernel's master dispatch sheet.
+> [!TIP]
+> **🔍 First-Principles Verification: Read the Kernel's Port Table**
+> Let's read the raw hex table in kernel memory directly to see how incoming ports are registered inside the OS:
+> ```bash
+> cat /proc/net/tcp
+> ```
+> **What to look for:**
+> You will see a table displaying local addresses in hex format:
+> ```text
+>   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode
+>    0: 00000000:0050 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 12345 1
+>    1: 00000000:01BB 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 12346 1
+> ```
+> **How to decode the local_address column:**
+> - `00000000` is the IP `0.0.0.0` (which means the program listens on all interfaces).
+> - `0050` is the port in hex. Convert `50` hex: `5 * 16 = 80` (Port 80 HTTP!).
+> - `01BB` is the port in hex. Convert `1BB` hex: `1 * 256 + 11 * 16 + 11 = 443` (Port 443 HTTPS!).
+> - The `st` column lists `0A`, which is hex for state `10` (`TCP_LISTEN`).
+> 
+> The kernel parses this memory table on every incoming packet's destination port to route incoming traffic.
 
 ---
 

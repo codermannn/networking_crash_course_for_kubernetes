@@ -148,38 +148,29 @@ The packet successfully traveled from `room_a` to the `router`, was forwarded to
 
 ---
 
-### Step 3: Read the Kernel's Handwriting in Hex
+### Step 3: Read the Routing Table
 
-Let's read the raw map the kernel uses.
-
-**Run this:**
-```bash
-ip netns exec room_a cat /proc/net/route
-```
-
-**What to look for:**
-A table containing hex values:
-```text
-Iface   Destination Gateway     Flags   RefCnt  Use Metric  Mask            MTU     Window  IRTT
-veth_a  0002000A    FE01000A    0003    0       0   0       00FFFFFF        0       0       0
-```
-
-**What it means:**
-Let's decode this hex!
-- `Destination`: `0002000A`. Linux stores IP addresses in network byte order (little-endian hex).
-  - Break it down into bytes: `0A` `00` `02` `00`.
-  - Convert to decimal: `0A` = 10, `00` = 0, `02` = 2, `00` = 0.
-  - This is `10.0.2.0`!
-- `Gateway`: `FE01000A`. 
-  - Bytes: `0A` `00` `01` `FE`.
-  - Decimal: `0A` = 10, `00` = 0, `01` = 1, `FE` = 254.
-  - This is `10.0.1.254`!
-- `Mask`: `00FFFFFF`.
-  - Bytes: `FF` `FF` `FF` `00`.
-  - Decimal: `255.255.255.0`.
-  - This is our `/24` subnet mask!
-
-The kernel reads this raw memory array to make microsecond routing decisions.
+> [!TIP]
+> **🔍 First-Principles Verification: Read the Kernel's Handwriting in Hex**
+> Let's bypass userspace command wrappers like `ip route` and read the raw routing map inside kernel memory directly. Run:
+> ```bash
+> ip netns exec room_a cat /proc/net/route
+> ```
+> **What to look for:**
+> You will see a table containing hex values:
+> ```text
+> Iface   Destination Gateway     Flags   RefCnt  Use Metric  Mask            MTU     Window  IRTT
+> veth_a  0002000A    FE01000A    0003    0       0   0       00FFFFFF        0       0       0
+> ```
+> **How to decode this hex:**
+> - `Destination`: `0002000A`. Linux stores IP addresses in network byte order (little-endian hex).
+>   - Bytes: `0A` `00` `02` `00` -> convert to decimal: `0A` = 10, `00` = 0, `02` = 2, `00` = 0. This is `10.0.2.0`!
+> - `Gateway`: `FE01000A`.
+>   - Bytes: `0A` `00` `01` `FE` -> convert to decimal: `0A` = 10, `00` = 0, `01` = 1, `FE` = 254. This is `10.0.1.254`!
+> - `Mask`: `00FFFFFF`.
+>   - Bytes: `FF` `FF` `FF` `00` -> convert to decimal: `255.255.255.0` (our `/24` subnet mask).
+> 
+> The kernel scans this memory array on every outgoing packet to make microsecond routing decisions.
 
 ---
 

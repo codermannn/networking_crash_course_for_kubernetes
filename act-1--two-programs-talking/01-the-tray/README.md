@@ -93,6 +93,30 @@ It starts with a `p` (for pipe). And its size is `0` bytes.
 **What it means:**
 This file has no physical existence on the hard drive. It is a ghost. The path `/tmp/my_tray` is simply a name—a hook in the filesystem that points directly to a buffer in the kernel's RAM. It is a tray that exists only as long as we look at it.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's look behind the curtain of this virtual ghost. Run this command inside your workbench terminal:
+> ```bash
+> cat /proc/sys/fs/pipe-max-size
+> ```
+> **What to look for:**
+> You will see `1048576` (exactly 1 MB). This is the maximum memory ceiling in bytes that the Linux kernel will allocate for a single pipe buffer.
+> 
+> To measure the default buffer capacity in RAM, run this Python snippet inside your terminal to write non-blocking chunks to the pipe until it blocks:
+> ```bash
+> python3 -c '
+> import os
+> fd = os.open("/tmp/my_tray", os.O_RDWR | os.O_NONBLOCK)
+> total = 0
+> try:
+>     while True:
+>         total += os.write(fd, b"A" * 1024)
+> except BlockingIOError:
+>     print(f"RAM buffer full! Wrote {total} bytes before blocking.")
+> '
+> ```
+> You will see the output print: `RAM buffer full! Wrote 65536 bytes before blocking.` This proves that the kernel's named pipe buffer resides in RAM and has a default allocation of exactly 64 KB.
+
 ---
 
 ### Step 2: The Blocked Reader

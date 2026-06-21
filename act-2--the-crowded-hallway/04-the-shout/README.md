@@ -139,6 +139,15 @@ You should see:
 **What it means:**
 The kernel wrote the answer in its notebook (`ip neigh` cache). The next time you send data to `172.20.0.3`, it will bypass the shout completely and write the MAC address directly on the envelope.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's look directly at the kernel's active ARP table in memory. Run:
+> ```bash
+> cat /proc/net/arp
+> ```
+> **What to look for:**
+> You will see a table displaying the IP address `172.20.0.3` mapped to the hardware address `02:42:ac:14:00:03` on the interface `eth0`. The `ip neigh` command is simply querying this kernel memory map, which contains the cached associations.
+
 ---
 
 ## 🗺️ Visualise the Flow

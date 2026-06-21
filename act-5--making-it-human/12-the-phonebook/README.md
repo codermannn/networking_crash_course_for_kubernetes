@@ -87,6 +87,19 @@ Every time you resolve a name, a secret network request fires in the background.
 **What to look for:**
 You should see a UDP query packet containing the string `google.com` flying out to the nameserver IP, followed immediately by a reply packet containing the resolved IP addresses (`142.250.190.46`). Only after this UDP exchange did the TCP SYN packet to port 80 fire.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's bypass the network entirely and verify how the C library resolves names locally before hitting the DNS port. In your container terminal, add a fake entry to your local index card file:
+> ```bash
+> echo "1.1.1.1 google.com" >> /etc/hosts
+> curl -I http://google.com
+> ```
+> **What to look for:**
+> You will see `curl` try to connect to `1.1.1.1` instead of Google's real IP address. 
+> 
+> If you check your `tcpdump` window, you will notice that **no network packet was sent to port 53**. This proves that name resolution is executed in userspace by the standard C library (`getaddrinfo` wrapper), which checks the local filesystem `/etc/hosts` before calling the socket API. 
+> *(Be sure to edit `/etc/hosts` and remove the fake entry when finished!)*
+
 ---
 
 ### Step 3: Trace the Syscalls

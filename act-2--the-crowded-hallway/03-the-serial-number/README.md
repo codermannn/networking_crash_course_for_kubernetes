@@ -83,6 +83,15 @@ A string of 6 hex bytes separated by colons, e.g., `02:42:ac:14:00:02`.
 **What it means:**
 This is your interface's MAC address—the serial number stamped on your room's mail slot. In the physical realm, no other interface in the world should share this exact label.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's verify that this MAC address resides directly in the kernel's virtual device file system (`sysfs`). Run this in Terminal 1:
+> ```bash
+> ip link show eth0
+> ```
+> **What to look for:**
+> Look at the `link/ether` line. You will see the exact same MAC address. The `/sys/class/net/` directory tree is a virtual filesystem generated dynamically by the kernel to expose driver properties, allowing userspace programs to read hardware state as if it were a simple text file.
+
 ---
 
 ### Step 2: Read B's Serial Number

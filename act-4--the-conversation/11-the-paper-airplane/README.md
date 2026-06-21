@@ -105,6 +105,22 @@ But check Terminal 1. Did `nc` exit with an error? No! It exited cleanly.
 **What it means:**
 UDP is connectionless. The sender's kernel did not establish any state machine (no handshake). It simply wrapped the bytes in a UDP header, threw them at the network card, and moved on. It doesn't know or care if anyone is listening.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's verify that the kernel does not maintain any connection state for this socket. Inside the sender container, run:
+> ```bash
+> ss -uln
+> ```
+> **What to look for:**
+> You will see the state lists `UNCONN` (Unconnected). Unlike TCP sockets which maintain persistent socket structures (`ESTAB`), a UDP socket is always connectionless in kernel memory.
+> 
+> Furthermore, let's check how the kernel logs buffer overflows when flooded with UDP datagrams. Run this on the receiver container:
+> ```bash
+> netstat -su
+> ```
+> **What to look for:**
+> Look at the `packet receive errors` or `rcvbuf errors` counter. Since UDP has no flow control, any buffer overflow causes the kernel to discard the packets in RAM, incrementing this drop counter.
+
 ---
 
 ### Step 3: Compare Overhead

@@ -111,6 +111,17 @@ room_a
 **What it means:**
 We have created two fully isolated network stacks. Each room has its own loopback interface, its own routing table, and its own set of devices. They are completely soundproofed from each other and from the host.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's verify that the kernel has created two completely separate network namespace objects in memory. In your workbench shell, run:
+> ```bash
+> ls -l /proc/self/ns/net
+> ip netns exec room_a ls -l /proc/self/ns/net
+> ip netns exec room_b ls -l /proc/self/ns/net
+> ```
+> **What to look for:**
+> Look at the inode numbers in brackets (e.g. `net:[4026531992]`). You will see that the host namespace, `room_a` namespace, and `room_b` namespace all list different inode numbers. This proves the namespaces are physically partitioned by the kernel's process virtual namespace table.
+
 ---
 
 ### Step 3: Build the Hallway (Veth Pair)

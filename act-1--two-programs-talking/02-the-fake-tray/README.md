@@ -103,6 +103,22 @@ And it stops there, waiting.
 3. `listen()` prepares the kernel to queue incoming guests.
 4. `accept()` tells the kernel to put the process to sleep until a guest actually knocks on descriptor `3`.
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> While the server process is sleeping on `accept()`, let's check the kernel's active socket table directly. In a new terminal window inside `machine_b`, run:
+> ```bash
+> cat /proc/net/tcp
+> ```
+> **What to look for:**
+> Look at the local address column. You will see an entry like `00000000:1F90` where `1F90` is the port in hex. Convert `1F90` hex to decimal: `1 * 4096 + 15 * 256 + 9 * 16 = 8080`. 
+> 
+> You can also match this entry directly to the program's file descriptors by running:
+> ```bash
+> PID=$(pgrep socket_listen)
+> ls -l /proc/$PID/fd/
+> ```
+> You will see `3 -> socket:[<inode>]`, where the inode number matches the `inode` column in the `/proc/net/tcp` table. This proves the socket is literally represented as a standard File Descriptor inside the process directory.
+
 ---
 
 ### Step 2: Retrieve the IP of the Server

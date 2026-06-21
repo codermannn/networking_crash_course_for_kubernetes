@@ -164,11 +164,21 @@ ip netns exec room_a ping -c 1 10.0.1.2
 It works!
 ```text
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.050/0.050/0.050/0.000 ms
 ```
 
 **What it means:**
 The target prefix (`10.0.1.0`) matched the sender's prefix. The kernel realized they were on the same floor, sent an ARP shout to find the MAC address for `10.0.1.2`, wrote the MAC on the envelope, and sent it down the veth cable.
+
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's verify that the kernel automatically adds local subnet routing rules whenever you assign an IP address. In your workbench shell, run:
+> ```bash
+> ip netns exec room_a ip route show dev veth_a
+> ```
+> **What to look for:**
+> You will see a route like:
+> `10.0.1.0/24 proto kernel scope link src 10.0.1.1`
+> This is a **Link Route**. It proves the kernel automatically registers this subnet prefix as local, allowing it to bypass gateway routing and shout directly over the wire.
 
 ---
 

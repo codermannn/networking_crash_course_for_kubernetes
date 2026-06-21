@@ -78,19 +78,22 @@ Let's look at how the kernel tracks translations. We have created a helper scrip
 1. In one terminal window, start a persistent connection by downloading a large file in the background (or running a curl loop).
 2. In a second terminal, execute `nat_inspect.py` (which reads `/proc/net/nf_conntrack`).
 
-**What to look for:**
-You will see active tracked connections:
-```text
-Proto  | Original (Src -> Dst)               | Reply (Src -> Dst)                  | State       
-------------------------------------------------------------------------------------------------
-tcp    | 172.20.0.2:45230 -> 142.250.190.46:80 | 142.250.190.46:80 -> 172.20.0.2:45230 | ESTABLISHED 
-```
-
-**What it means:**
-The first part is the **Original** packet flow: `172.20.0.2` sending from port `45230` to Google (`142.250.190.46`) on port `80`.
-The second part is the **Reply** expectation: if a packet arrives from Google (`142.250.190.46:80`) to this host, rewrite the destination to `172.20.0.2:45230`.
-
-The kernel uses this notepad to translate return envelopes automatically.
+> [!TIP]
+> **🔍 First-Principles Verification: Read the Conntrack Table**
+> Let's bypass the script wrapper and read the raw kernel connection tracking notepad directly from memory:
+> ```bash
+> cat /proc/net/nf_conntrack
+> ```
+> **What to look for:**
+> You will see active tracked connections displayed as lines of text:
+> ```text
+> ipv4     2 tcp      6 431999 ESTABLISHED src=172.20.0.2 dst=142.250.190.46 sport=45230 dport=80 src=142.250.190.46 dst=172.20.0.2 sport=80 dport=45230 [ASSURED] mark=0 zone=0 use=2
+> ```
+> **How to interpret this table:**
+> - `src=172.20.0.2 dst=142.250.190.46 sport=45230 dport=80`: The Original packet headers from the private sender.
+> - `src=142.250.190.46 dst=172.20.0.2 sport=80 dport=45230`: The Reply packet headers the kernel expects to receive back.
+> 
+> The helper script `nat_inspect.py` parses these exact `/proc` entries to present a clean original → reply address translation table. The kernel relies on this state memory to rewrite envelopes automatically.
 
 ---
 

@@ -89,6 +89,15 @@ Look at the output lines. You will see columns showing IP addresses and, in brac
 
 Each BGP router along the way learned about Google's IP block because Google's routers broadcasted: *"Hey, we own 8.8.8.0/24. If you send packets here, the path is AS15169."*
 
+> [!TIP]
+> **🔍 First-Principles Verification**
+> Let's verify that these AS mappings are registered in global WHOIS prefix assignment databases. Inside your container, query YouTube's hijacked prefix block from the 2008 incident:
+> ```bash
+> whois 208.65.153.0
+> ```
+> **What to look for:**
+> Look at the `origin` field. It should list `AS36561` (YouTube). During the 2008 block, Pakistan Telecom (AS17557) began gossiping that they owned a `/24` block inside this space. Because the Internet routers automatically select the **Longest Prefix Match** (the most specific rule), they redirected the traffic to Pakistan's routers, hijacking YouTube.
+
 ---
 
 ### Step 2: The BGP Hijack (The YouTube Incident)
