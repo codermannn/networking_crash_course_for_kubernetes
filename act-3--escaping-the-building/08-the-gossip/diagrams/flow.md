@@ -25,9 +25,11 @@ flowchart TD
     
     AS400 -.->|"Lies: 'I own 8.8.8.0/24!'\nAS Path: [400] (shorter!)"| AS100
 
-    Note over AS100: Router 1 sees two paths to 8.8.8.0/24:<br/>1. Via AS200: [200, 300] (2 hops)<br/>2. Via AS400: [400] (1 hop!)<br/>Shortest path wins! Traffic is hijacked.
+    Note["Router 1 sees two paths to 8.8.8.0/24:<br/>1. Via AS200: [200, 300] (2 hops)<br/>2. Via AS400: [400] (1 hop!)<br/>Shortest path wins! Traffic is hijacked."]
+    AS100 --- Note
 
     style AS300 fill:#d1fae5,stroke:#10b981
     style AS400 fill:#fee2e2,stroke:#ef4444
     style AS100 fill:#e6f2ff,stroke:#0066cc
+    style Note fill:#fff9db,stroke:#fab005,stroke-width:1px,stroke-dasharray: 5 5
 ```
