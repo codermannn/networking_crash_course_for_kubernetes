@@ -3,6 +3,7 @@
 This diagram shows how three machines sharing a virtual wire receive all data, but only the machine matching the Destination MAC address processes it.
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
 sequenceDiagram
     participant A as Machine A (MAC: AA:AA)
     participant Bridge as Shared Wire (Bridge)

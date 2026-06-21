@@ -3,6 +3,7 @@
 This diagram shows how the NAT gateway (the con artist) intercepts outgoing traffic, replaces the private sender IP with its own public IP, and uses a lookup table (`conntrack`) to map replies back.
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
 sequenceDiagram
     participant Pod as Private Pod (10.0.1.2:1234)
     participant NAT as NAT Gateway (Router, Pub IP: 99.99.99.99)

@@ -3,15 +3,16 @@
 This diagram shows how a name query traverses the chain of phonebooks. The C Library (`libc`) queries the local recursive resolver, which queries the hierarchy if the answer isn't cached.
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'primaryBorderColor': '#64748B', 'lineColor': '#475569' }}}%%
 flowchart TD
-    App["Application\n(e.g., curl google.com)"]
-    libc["C Library (libc)\ngetaddrinfo()"]
-    Resolv["/etc/resolv.conf\n(Pointed to DNS Resolver)"]
-    Recursive["Recursive DNS Resolver\n(e.g., CoreDNS or 8.8.8.8)"]
+    App["Application<br/>(e.g., curl google.com)"]
+    libc["C Library (libc)<br/>getaddrinfo()"]
+    Resolv["/etc/resolv.conf<br/>(Pointed to DNS Resolver)"]
+    Recursive["Recursive DNS Resolver<br/>(e.g., CoreDNS or 8.8.8.8)"]
     
-    Root["1. Root Nameservers\n('.')"]
-    TLD["2. TLD Nameservers\n('.com')"]
-    Auth["3. Authoritative Nameservers\n('google.com')"]
+    Root["1. Root Nameservers<br/>('.')"]
+    TLD["2. TLD Nameservers<br/>('.com')"]
+    Auth["3. Authoritative Nameservers<br/>('google.com')"]
 
     App -->|1. Lookup name| libc
     libc -->|2. Reads resolv.conf, sends UDP| Resolv
@@ -27,9 +28,11 @@ flowchart TD
     Recursive -->|10. Returns IP| libc
     libc -->|11. Returns IP to Application| App
 
-    style App fill:#f9f9f9,stroke:#333
-    style libc fill:#ffffff,stroke:#333
-    style Resolv fill:#ffe6cc,stroke:#d97706
-    style Recursive fill:#e6f2ff,stroke:#0066cc
+    style App fill:#F8FAFC,stroke:#64748B,stroke-width:1px
+    style libc fill:#F8FAFC,stroke:#64748B,stroke-width:1px
+    style Resolv fill:#FFF7ED,stroke:#EA580C,stroke-width:1px
+    style Recursive fill:#E0E7FF,stroke:#4F46E5,stroke-width:1.5px
+    style Root fill:#EEF2F6,stroke:#475569,stroke-width:1px
+    style TLD fill:#EEF2F6,stroke:#475569,stroke-width:1px
+    style Auth fill:#EEF2F6,stroke:#475569,stroke-width:1px
 ```
-# 

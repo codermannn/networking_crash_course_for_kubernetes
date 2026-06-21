@@ -3,6 +3,7 @@
 This diagram shows how the OS kernel translates standard read/write file system calls into network packets, keeping the network card (NIC) and wires hidden behind a File Descriptor "mask."
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
 sequenceDiagram
     participant Client as Client (machine_a)
     participant CKernel as Client Kernel

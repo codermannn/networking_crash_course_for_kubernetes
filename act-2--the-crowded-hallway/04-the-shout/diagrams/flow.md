@@ -3,6 +3,7 @@
 This diagram shows how the OS kernel yells a broadcast message to discover the hardware MAC address of a destination IP, then updates its internal cache notebook (`ip neigh`).
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
 sequenceDiagram
     participant A as Machine A (172.20.0.2)
     participant Bridge as Shared Wire (Bridge)

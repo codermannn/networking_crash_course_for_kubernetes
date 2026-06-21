@@ -3,6 +3,7 @@
 This diagram shows how TCP handles packet loss. The sender numbers every byte, and the receiver acknowledges the highest contiguous byte received.
 
 ```mermaid
+%%{init: { 'theme': 'neutral', 'themeVariables': { 'primaryColor': '#F8FAFC', 'actorBkg': '#F8FAFC', 'actorBorder': '#64748B', 'lineColor': '#475569', 'signalColor': '#312E81', 'signalLineColor': '#4338CA', 'labelBoxBorderColor': '#64748B', 'labelBoxBkgColor': '#F1F5F9', 'noteBorderColor': '#CA8A04', 'noteBkgColor': '#FEF08A' }}}%%
 sequenceDiagram
     participant Sender as TCP Sender
     participant Wire as Unreliable Wire (30% Loss)
