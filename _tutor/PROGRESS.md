@@ -77,9 +77,11 @@
     1.  A **"🗺️ The Seeker's Path: How to Study This Module"** callout at the top of every README showing the precise order of learning steps.
     2.  An **"🔍 Inspect the Code"** callout box inline before C/Python file compilation/runs, linking directly to the source code file.
     3.  A **"🗺️ Visualise the Flow"** section inline containing the embedded Mermaid diagram from `diagrams/flow.md`, explaining how the diagram maps the actions they just ran.
+*   **Verification Request:** The student requested explicit instructions to verify the systems-level first-principles behavior (such as testing named pipe RAM allocation sizes, socket descriptors, and kernel namespaces) inside the `netshoot` containers.
+*   **Resolution:** Injected a **"🔍 First-Principles Verification"** callout box directly inside the investigation steps of all 13 modules, giving the exact commands (e.g. reading `/proc`, `/sys`, running python limits checks) to verify kernel states.
 
 ---
 
 ## 6. Next Session Plan
 
-*   Begin Act I, Module 01: The Tray. Walk the student through the prediction step, inspecting `tray.c`, compiling/running the reader/writer, and studying the Named Pipe Flow diagram.
+*   Begin Act I, Module 01: The Tray. Walk the student through the prediction step, inspecting `tray.c`, testing the 64 KB RAM buffer capacity, and studying the Named Pipe Flow diagram.
